@@ -2,7 +2,7 @@ import nltk
 from nltk.tag import pos_tag
 from nltk.tokenize import word_tokenize
 from nltk.tree import bracket_parse
-nltk.download('sentiwordnet')
+# nltk.download('sentiwordnet')
 from nltk.corpus import sentiwordnet as swn
 from nltk.corpus import wordnet
 
