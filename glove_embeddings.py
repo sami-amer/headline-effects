@@ -27,4 +27,4 @@ text_field.build_vocab(
 vocab = text_field.vocab
 
 # vocab.vectors
-print(vocab['are']) # unknown tokens are 0, padding tokens are 1
+print(vocab['hi']) # unknown tokens are 0, padding tokens are 1
