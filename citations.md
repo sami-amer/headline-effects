@@ -13,3 +13,7 @@ citation: Jeffrey Pennington, Richard Socher, and Christopher D. Manning. 2014. 
 
 ### SentiWord Net
 http://nmis.isti.cnr.it/sebastiani/Publications/2007TR02.pdf
+
+# PyTorch Text Classification
+
+https://pytorch.org/tutorials/beginner/text_sentiment_ngrams_tutorial.html
