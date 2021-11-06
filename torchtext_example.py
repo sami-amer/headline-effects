@@ -1,10 +1,9 @@
-# Step 1: getting an iterator for the data
+# Step 1: Get the data
 import torch
-from torch.utils import data
-from torchtext.datasets import AG_NEWS # imports the AG news dataset
+from torchtext.datasets import AG_NEWS
 
 train_iter = AG_NEWS(split= 'train') # gets the training split
-
+# Step 2: Create an iterator
 from torchtext.data.utils import get_tokenizer # gets the tokenizer
 from torchtext.vocab import build_vocab_from_iterator # builds the vocabulary from the training data
 
@@ -25,8 +24,8 @@ vocab.set_default_index(vocab["<unk>"]) # sets the default index to the unknown 
 text_pipeline = lambda x: vocab(tokenizer(x))
 label_pipeline = lambda x: int(x) - 1
 
-# Step 2: creating a batch collator
-from torch.utils.data import TensorDataset, DataLoader, dataloader
+# Step 3: generate data batch and iterator
+from torch.utils.data import DataLoader
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 def collate_batch(batch):
@@ -41,11 +40,11 @@ def collate_batch(batch):
     text_list = torch.cat(text_list)
     return label_list.to(device), text_list.to(device), offsets.to(device)
 
-
+train_iter = AG_NEWS(split = 'train')
 dataloader = DataLoader(train_iter, batch_size=8, shuffle = False,
  collate_fn=collate_batch)
 
-# Step 3: Creating the model
+# Step 4: Creating the model
 from torch import nn 
 
 class TextClassificationModel(nn.Module):
@@ -66,7 +65,7 @@ class TextClassificationModel(nn.Module):
         embedded = self.embedding(text, offsets)
         return self.fc(embedded)
 
-# Step 4: Initaite an instance
+# Step 5: Initaite an instance
 
 num_class = len(set([label for (label, text) in train_iter]))
 vocab_size = len(vocab)
@@ -112,7 +111,7 @@ def evaluate(dataloader):
     return total_acc/total_count
 
 
-# Step 5: Split Dataset and run model
+# Step 6: Split Dataset and run model
 from torch.utils.data.dataset import random_split
 from torchtext.data.functional import to_map_style_dataset
 # Hyperparameters
@@ -152,3 +151,37 @@ for epoch in range(1, EPOCHS + 1):
                                            time.time() - epoch_start_time,
                                            accu_val))
     print('-' * 59)
+
+# Step 7: Evaluate Model
+print('Checking the results of test dataset.')
+accu_test = evaluate(test_dataloader)
+print('test accuracy {:8.3f}'.format(accu_test))
+
+# Step 8: Test on Random News
+
+ag_news_label = {1: "World",
+                 2: "Sports",
+                 3: "Business",
+                 4: "Sci/Tec"}
+
+def predict(text, text_pipeline):
+    with torch.no_grad():
+        text = torch.tensor(text_pipeline(text))
+        output = model(text, torch.tensor([0]))
+        return output.argmax(1).item() + 1
+
+ex_text_str = "MEMPHIS, Tenn. – Four days ago, Jon Rahm was \
+    enduring the season’s worst weather conditions on Sunday at The \
+    Open on his way to a closing 75 at Royal Portrush, which \
+    considering the wind and the rain was a respectable showing. \
+    Thursday’s first round at the WGC-FedEx St. Jude Invitational \
+    was another story. With temperatures in the mid-80s and hardly any \
+    wind, the Spaniard was 13 strokes better in a flawless round. \
+    Thanks to his best putting performance on the PGA Tour, Rahm \
+    finished with an 8-under 62 for a three-stroke lead, which \
+    was even more impressive considering he’d never played the \
+    front nine at TPC Southwind."
+
+model = model.to("cpu")
+
+print("This is a %s news" %ag_news_label[predict(ex_text_str, text_pipeline)])
