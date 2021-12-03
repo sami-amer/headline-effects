@@ -1,10 +1,64 @@
+import re
+import string
+
 import nltk
 from nltk.tag import pos_tag
 from nltk.tokenize import word_tokenize
 from nltk.tree import bracket_parse
-# nltk.download('sentiwordnet')
+nltk.download('sentiwordnet')
 from nltk.corpus import sentiwordnet as swn
 from nltk.corpus import wordnet
+from nltk.stem.wordnet import WordNetLemmatizer
+
+from nltk.corpus import stopwords
+nltk.download('stopwords')
+from nltk.tokenize import word_tokenize
+
+
+
+## ------------------------------------------------------------------------------------------------
+##
+## The following code is borrowed from 
+## 
+## Jackson, Holly (2021). The New York Times Distorts the Palestinian Struggle:
+## A Case Study of Anti-Palestinian Bias in American News Coverage of the First
+## and Second Palestinian Intifadas. Pre-print: http://web.mit.edu/hjackson/www/
+## The_NYT_Distorts_the_Palestinian_Struggle.pdf.
+##
+## in the following file
+##
+## https://github.com/hollyjackson/NYT_Content_Analysis/blob/main/generate_training_set.py
+##
+
+def clean_text(text):
+    # will replace the html characters with " "
+    text = re.sub('<.*?>', ' ', text)  
+    # to remove the punctuations
+    text = text.translate(str.maketrans(' ',' ',string.punctuation))
+    # will consider only alphabets and numerics
+    text = re.sub('[^a-zA-Z]',' ',text)  
+    # will replace newline with space
+    text = re.sub("\n"," ",text)
+    # will convert to lower case
+    text = text.lower()
+    return text
+
+def preprocess(text):
+    stop_words = set(stopwords.words('english')) 
+    lemmatizer = WordNetLemmatizer()
+    # split into words
+    text = clean_text(text)
+    # separate into words and remove stop words
+    word_tokens = word_tokenize(text) 
+    output_text = [w for w in word_tokens if not w in stop_words] 
+    # lemmatize words
+    lemmatized_text = [lemmatizer.lemmatize(w) for w in output_text]
+    return lemmatized_text
+
+##
+##
+## ------------------------------------------------------------------------------------------------
+
 
 raw = """RIO DE JANEIRO — Brazil, a global climate leader turned environmental villain under President Jair Bolsonaro, approached the United Nations climate conference in Glasgow ready to prove it was changing course, with commitments to create a green jobs program, cut carbon emissions and curb deforestation. 
 But even as John Kerry, the U.S. climate envoy, said on Twitter that those steps added “crucial momentum” to combating climate change, environmentalists argued that the plans lacked ambition and the details that would make them credible.
@@ -32,6 +86,10 @@ Continue reading the main story
 Still, Mr. Bolsonaro’s absence goes against the argument that Brazil is reversing course, said Natalie Unterstell, the president of the Institute Talanoa, a climate policy think tank.
 
 “It’s a big contradiction,” she said. “At the moment when he should be confirming that he wants to be more ambitious about climate issues, he isn’t present.”"""
+
+
+# raw = "slow"
+
 def get_wordnet_pos(treebank_tag):
 
     if treebank_tag.startswith('J'):
@@ -44,23 +102,58 @@ def get_wordnet_pos(treebank_tag):
         return wordnet.ADV
     else:
         return ''
-tokens = word_tokenize(raw)
-tagged = pos_tag(tokens)
+
+# text = "Nick likes to play football, however he is not too fond of tennis."
+
+tokens = preprocess(raw)
+
+# tokens = word_tokenize(raw)
+# print(tokens)
+
+# tokens_without_sw = [word for word in tokens if not word in stop_words]
+# count_sw = 0
+# tokens_without_sw = []
+# for word in tokens:
+#     if not word in stop_words:
+#         tokens_without_sw.append(word)
+#     else:
+#         count_sw += 1
+# print('count_sw',count_sw)
+# print(tokens_without_sw)
+
+
+tagged = pos_tag(tokens_without_sw)
+# tagged = pos_tag(tokens)
 # print(tagged)
 pos_score = 0
 neg_score = 0
 obj_score = 0
+num_words = 0
 for tup in tagged:
     new_tag = get_wordnet_pos(tup[1])
     try:
-        breakdown = swn.senti_synset(tup[0]+'.'+new_tag+'.'+'01')
-        neg_score -= breakdown.neg_score()
-        pos_score += breakdown.pos_score()
-        obj_score += breakdown.obj_score()
-    except nltk.corpus.reader.wordnet.WordNetError:
+        words = swn.senti_synsets(tup[0], new_tag)
+        list_words = list(words)
+        if len(list_words) != 0:
+            print(tup[0], list_words)
+            word = list_words[0]
+            # breakdown = swn.senti_synset(tup[0]+'.'+new_tag+'.'+'01')
+            # print(tup[0]+'.'+new_tag+'.'+'01')
+            # print(breakdown)
+            # neg_score -= breakdown.neg_score()
+            # pos_score += breakdown.pos_score()
+            # obj_score += breakdown.obj_score()
+
+            neg_score -= word.neg_score()
+            pos_score += word.pos_score()
+            obj_score += word.obj_score()
+            num_words += 1
+    except: # nltk.corpus.reader.wordnet.WordNetError:
         # print('error')
         pass
 print(pos_score,neg_score,obj_score)
+print('Average article objectivity rating:',obj_score/num_words)
+avg_obj_score = obj_score / num_words
 
 # text = nltk.Text(tokens)
 # breakdown = swn.senti_synset(tagged)

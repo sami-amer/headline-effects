@@ -53,3 +53,9 @@ https://github.com/hollyjackson/NYT_Content_Analysis/blob/main/voice_identifier.
 ## Using Semantic Analyiss between Texts !!
 
 https://towardsdatascience.com/semantic-similarity-using-transformers-8f3cb5bf66d6
+
+## Using GLOVE for word similarity 
+
+https://www.irjet.net/archives/V6/i4/IRJET-V6I4124.pdf
+
+https://stackoverflow.com/questions/62546815/how-to-use-word-embeddings-i-e-word2vec-glove-or-bert-to-calculate-the-most
