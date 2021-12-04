@@ -6,3 +6,7 @@
 
 #API
 *.api.txt
+
+# concrete data
+*.gz
+data/
