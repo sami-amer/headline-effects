@@ -26,7 +26,7 @@ def compute_semantic_similarity(headline_text, article_text):
         headline_similarity[i] = sum(article_similarity) / len(article)
     semantic_similartiy = sum(headline_similarity) / len(headline)
 
-    return semantic_similartiy
+    return semantic_similartiy, (len(headline), len(article))
 
 if __name__ == "__main__":
     headline = "Emphasizing Tests, Biden Vows to Fight Omicron With ‘Science and Speed"

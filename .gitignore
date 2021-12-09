@@ -10,3 +10,6 @@
 # concrete data
 *.gz
 data/
+
+# result plots
+result_plots/

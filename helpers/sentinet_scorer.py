@@ -111,7 +111,7 @@ def sentinet_scorer(text):
         words = swn.senti_synsets(tup[0], new_tag)
         list_words = list(words)
         if len(list_words) != 0:
-            print(tup[0], list_words)
+            # print(tup[0], list_words)
             word = list_words[0]
 
             pos_score += word.pos_score()
@@ -119,9 +119,10 @@ def sentinet_scorer(text):
             obj_score += word.obj_score()
             num_words += 1
 
-    print(pos_score,neg_score,obj_score)
-    print('Average article objectivity rating:',obj_score/num_words)
-    
+    # print(pos_score,neg_score,obj_score)
+    # print('Average article objectivity rating:',obj_score/num_words)
+    if num_words == 0:
+        return None
     avg_pos_score = pos_score / num_words
     avg_neg_score = neg_score / num_words
     avg_obj_score = obj_score / num_words
