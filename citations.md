@@ -59,3 +59,7 @@ https://towardsdatascience.com/semantic-similarity-using-transformers-8f3cb5bf66
 https://www.irjet.net/archives/V6/i4/IRJET-V6I4124.pdf
 
 https://stackoverflow.com/questions/62546815/how-to-use-word-embeddings-i-e-word2vec-glove-or-bert-to-calculate-the-most
+
+## Matplot Lib colors 
+
+https://scicomp.stackexchange.com/questions/18760/visually-appealing-ways-to-plot-singular-vector-fields-with-matplotlib-or-other

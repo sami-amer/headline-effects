@@ -1,0 +1,135 @@
+//----------------------------------------------------------------------------------------------------------------------------
+// save data here
+// var textData = tone diff, headline obj, diff in obj
+var textData = // pasted the data directly from python into here, as a JS object
+editor.put("textData", textData)
+// ----------------------------------------------------------------------------------------------------------------------------
+
+
+var textData = editor.get("textData")
+
+//------------------------------------------------- Create Model
+var makeModel = function(data){
+  return function(){
+    var maxCategories = 20 //this is K
+
+    //parameters on distributions over what categories are like
+    var distParams = {
+      categoryProbs: sample(Dirichlet({alpha:Vector(_.range(maxCategories).fill(0.2))})),
+
+    }
+
+    //parameters defining distributions over objects within a category
+    var categoryParams = map(function(k) {
+      return {
+//         Tonal Diff:  0.09568163443827307 0.06684782539283321
+//         Obj Diff:  0.07818520816690279 0.06305666749546548
+//         headline_obj:  0.9219253876678877 0.10207024339260934
+        
+        obj_diff: sample(Gaussian({mu:0.07818520816690279, sigma:0.01})),
+        sigma_obj_diff:0.06305666749546548,
+        headline_obj: sample(Gaussian({mu:0.9219253876678877 , sigma:0.01})),
+        sigma_headline_obj: 0.10207024339260934,
+        tonal_difference: sample(Gaussian({mu:0.09568163443827307, sigma:0.01})),
+        sigma_tonal_difference: 0.06684782539283321,
+      } 
+    }, _.range(maxCategories))
+
+    //which objects belong to which category? 
+    var categoryIdxs = map(function(o) {
+      var z = sample(Discrete({ps:distParams.categoryProbs}))
+     
+      //observing for tonal_difference
+      observe(Gaussian({mu:categoryParams[z].tonal_difference, sigma:categoryParams[z].sigma_tonal_difference}), o.tonal_difference)
+      //observing for a_obj
+      observe(Gaussian({mu:categoryParams[z].obj_diff, sigma:categoryParams[z].sigma_obj_diff}), o.obj_diff)
+      //observing for h_obj
+      observe(Gaussian({mu:categoryParams[z].headline_obj, sigma:categoryParams[z].sigma_headline_obj}), o.headline_obj)
+      return z
+    }, data)
+
+    return {distParams, categoryParams, categoryIdxs}
+  }
+}
+//-------------------------------------------------
+//------------------------------------------------- Plotter Code
+var plotter = function(dist, data){  
+  console.log('Entire dataset:')
+  viz.scatterShapes(data, {xBounds:[0,1], yBounds:[0,1]})
+
+  console.log('Classes:')
+  var categoryIdxs = _.last(dist.samples).value.categoryIdxs
+  map(function(categoryIdx) {
+    var idxs = filter(function(i) {categoryIdxs[i]==categoryIdx}, _.range(data.length))
+    if(idxs.length>0) {
+      viz.scatterShapes(map(function(i) {data[i]}, idxs), {xBounds:[0,1], yBounds:[0,1]})  
+    }
+  }, _.union(categoryIdxs))
+}
+//-------------------------------------------------
+//------------------------------------------------- Driver Code
+var model = makeModel(textData)
+var dist = Infer({method:"MCMC", burn:10000, lag:100, callbacks: [editor.MCMCProgress()]}, model)
+editor.put("distData",dist)
+var distData = editor.get("distData")
+plotter(distData, textData)
+//-------------------------------------------------
+//----------------------------------------------------------------------------------------------------------------------------
+
+var imagineObjDiff = function(obj_diff,dist) {
+  var p = sample(dist)
+  var distParams = p.distParams
+  var categoryParams = p.categoryParams
+  var j = sample(Discrete({ps:distParams.categoryProbs}))
+  observe(Gaussian({mu:categoryParams[j].obj_diff, sigma:categoryParams[j].sigma_obj_diff}), obj_diff)
+  var tonal_difference = sample(Gaussian({mu:categoryParams[j].tonal_difference, sigma:categoryParams[j].sigma_tonal_difference}))
+  var headline_obj = sample(Gaussian({mu:categoryParams[j].headline_obj, sigma:categoryParams[j].sigma_headline_obj}))  
+  return {tonal_difference, headline_obj, obj_diff}
+}
+editor.put("imagineObjDiff",imagineObjDiff)
+
+
+var imagineObjDiff = editor.get("imagineObjDiff")
+var dist = editor.get("distData")
+var distCross = Infer({method:"rejection", samples:100, maxScore:2}, 
+  function(){return imagineObjDiff(0.3,dist)})
+viz.scatterShapes(map(function(s){s.value}, distCross.samples), {xBounds:[0,1], yBounds:[0,1]})
+//----------------------------------------------------------------------------------------------------------------------------
+var imagineHeadlineObj = function(headline_obj,dist) {
+  var p = sample(dist)
+  var distParams = p.distParams
+  var categoryParams = p.categoryParams
+  var j = sample(Discrete({ps:distParams.categoryProbs}))
+  observe(Gaussian({mu:categoryParams[j].headline_obj, sigma:categoryParams[j].sigma_headline_obj}), headline_obj)
+  var tonal_difference = sample(Gaussian({mu:categoryParams[j].tonal_difference, sigma:categoryParams[j].sigma_tonal_difference}))
+  var obj_diff = sample(Gaussian({mu:categoryParams[j].obj_diff, sigma:categoryParams[j].sigma_obj_diff}))  
+  return {tonal_difference, headline_obj, obj_diff}
+}
+editor.put("imagineHeadlineObj",imagineHeadlineObj)
+
+var imagineHeadlineObj = editor.get("imagineHeadlineObj")
+var dist = editor.get("distData")
+
+var distCross = Infer({method:"rejection", samples:100, maxScore:2}, 
+   function(){return imagineHeadlineObj(0.75,dist)})
+
+viz.scatterShapes(map(function(s){s.value}, distCross.samples), {xBounds:[0,1], yBounds:[0,1]})
+//----------------------------------------------------------------------------------------------------------------------------
+var imagineTonalDiff = function(tonal_difference,dist) {
+  var p = sample(dist)
+  var distParams = p.distParams
+  var categoryParams = p.categoryParams
+  var j = sample(Discrete({ps:distParams.categoryProbs}))
+  observe(Gaussian({mu:categoryParams[j].tonal_difference, sigma:categoryParams[j].sigma_tonal_difference}), tonal_difference)
+  var headline_obj = sample(Gaussian({mu:categoryParams[j].headline_obj, sigma:categoryParams[j].sigma_headline_obj}))
+  var obj_diff = sample(Gaussian({mu:categoryParams[j].obj_diff, sigma:categoryParams[j].sigma_obj_diff}))  
+  return {tonal_difference, headline_obj, obj_diff}
+}
+editor.put("imagineTonalDiff",imagineTonalDiff)
+
+var imagineTonalDiff = editor.get("imagineTonalDiff")
+var dist = editor.get("distData")
+var distCross = Infer({method:"rejection", samples:1, maxScore:2}, 
+  function(){return imagineTonalDiff(0.75,dist)})
+viz.scatterShapes(map(function(s){s.value}, distCross.samples), {xBounds:[0,1], yBounds:[0,1]})
+//----------------------------------------------------------------------------------------------------------------------------

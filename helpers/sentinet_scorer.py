@@ -45,8 +45,7 @@ from nltk.stem.wordnet import WordNetLemmatizer
 ## 
 ## Jackson, Holly (2021). The New York Times Distorts the Palestinian Struggle:
 ## A Case Study of Anti-Palestinian Bias in American News Coverage of the First
-## and Second Palestinian Intifadas. Pre-print: http://web.mit.edu/hjackson/www/
-## The_NYT_Distorts_the_Palestinian_Struggle.pdf.
+## and Second Palestinian Intifadas. Pre-print: http://web.mit.edu/hjackson/www/The_NYT_Distorts_the_Palestinian_Struggle.pdf.
 ##
 ## in the following file
 ##
