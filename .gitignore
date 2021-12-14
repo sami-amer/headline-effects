@@ -14,10 +14,4 @@ data/
 # result plots
 result_plots/
 
-# images
-*.png
 
-# misc
-*.bib
-*.txt
-*.md

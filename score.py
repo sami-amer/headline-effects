@@ -1,15 +1,24 @@
 """
-add docs
+Scores the data and saves the array to a .npy
 """
 
+# native
+
+from tqdm import tqdm
+from pathlib import Path
 from tarfile import REGULAR_TYPES
 from typing import List
-from numpy.lib.npyio import save
+
+# import
+
 from helpers import glove_semantic_similarity, sentinet_scorer, plotter
+
+#lib
+
 from concrete.util import CommunicationReader
-from pathlib import Path
+from numpy.lib.npyio import save
 import numpy as np
-from tqdm import tqdm
+
 
 def import_data(input_file):
     
@@ -41,7 +50,6 @@ def score(files, save_name):
         similarity_score, new_lengths = glove_semantic_similarity.compute_semantic_similarity(headline_text, article_text)
 
         
-        # scores.append([input_data[2],headline_text,swn_scores[0],swn_scores[1],similarity_score,(input_data[3], input_data[4]),(len(headline_text),len(article_text))])
         scores.append({
             "name" : input_data[2],
             "headline" : headline_text,
@@ -52,10 +60,8 @@ def score(files, save_name):
             "cleaned_lengths":(new_lengths[0],new_lengths[1])
         })
 
-    # print(scores)
     
     scores_array = np.array(scores)
-    # print(scores_array)
 
     np.save(save_name,scores_array)
 
@@ -85,28 +91,5 @@ if __name__ == "__main__":
     # main()
     p_2003 = Path("data/200305/")
     p_2006 = Path("data/20060/")
-    
-    # files_2003 = p_2003.glob("*")
-    # files_2006 = p_2006.glob("*")
-
-    # import_data(files_2003[0])
-    # files = []
-    
-    # with open("chosen_2003.txt","w+") as f:
-    #     counter  = 0
-    #     target = 15000
-    #     for file in tqdm(files_2003):
-    #         headline_text, article_text, name, len_headline, len_article = import_data(file)
-    #         if len_article > 1000:
-    #             f.write(name+"\n")
-    #             counter += 1
-    #             files.append(file)
-    #         if counter >= target:
-    #             break
     files = filter_files(p_2003)
     score(files,"run_2_15000.npy")
-    # print(files)
-    # print(import_data(files[0]))
-    
-    # names.sort()
-    # print(names)

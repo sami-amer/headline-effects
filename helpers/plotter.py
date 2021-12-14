@@ -1,27 +1,28 @@
 """
-plots the data
+Plots the data
 """
 
-
+# lib
 import matplotlib as plot
-import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib as mpl
 from matplotlib import pylab
+import numpy as np
 from pylab import *
 
 
 def plot_scores(npy_file, name):
-    
+    """
+    Takes the .npy file we generate from out data, and plots and saves the figures.  
+    There are no switches - you must uncomment whichever plot you want to run
+    """
     scores = np.load(npy_file, allow_pickle= True)
     similarity_scores, obj_ratios, headline_obj, article_obj, headline_pos, article_pos, headline_neg, article_neg = ([] for i in range(8))
     
     counter = 0
     for article in scores:
-    # for i in range(1500):
-        # article = scores[i]
-        if counter == 1250:
-            break
+        # if counter == 1250:
+        #     break
         headline_obj.append(article['headline_score'][2])
         article_obj.append(article['article_score'][2])
         obj_ratios.append(article['article_score'][2]/article['headline_score'][2])
@@ -62,6 +63,8 @@ def plot_scores(npy_file, name):
         colors.append(matplotlib.colors.rgb2hex(rgba))
     colors = np.array(colors)
 
+    # This code block generates the string to paste into WebPPL
+    # ------------------------------------------------------------------------------------------------------------------------------
     # output = []
     # for tDiff,hObj,oDiff,color in zip(tonal_difference, headline_obj, obj_diff,colors):
     #     output.append({"tonal_difference":round(tDiff,4), "headline_obj":round(hObj,4), "obj_diff":round(oDiff,4), "color": color})
@@ -75,6 +78,7 @@ def plot_scores(npy_file, name):
     #         f.write(str(item)+",\n")
     #         newCounter +=1
     #     f.write("]")
+    # ------------------------------------------------------------------------------------------------------------------------------
 
     # * Plots similarity versus objectivtiy ratios
     # fig, ax = plt.subplots()
@@ -113,8 +117,6 @@ def plot_scores(npy_file, name):
     # ax.set_ylabel("Article Obj")
     # fig.savefig(f"{name}_results_obj_ratio.png")
 
-
-    # ! important
     # * Plots the tonal difference versus objectivity of articles and headline, with an arrow ponting from headline to article
     # fig, ax = plt.subplots(dpi=300)
     # # ax.quiver(tonal_difference, headline_obj,np.zeros(np.shape(tonal_difference)), article_obj - headline_obj)
@@ -145,7 +147,6 @@ def plot_scores(npy_file, name):
     # # ax.set(ylim=(0, 1.05))
     # # ax.set(ylim=(-.81, 0.01), xlim =(-0.01, .71))
     # ax.set(ylim=(0.01, headline_neg.min() - 0.1), xlim =(-0.01, headline_pos.max()+0.01))
-
     # fig.savefig(f"{name}.png",dpi = 300)
 
     # * Plots the positivity versus negativity of articles and headlines, with an arrow pointing from headline to article
@@ -166,7 +167,6 @@ def plot_scores(npy_file, name):
     # ax.set(ylim=(0.01, headline_neg.min() - 0.1), xlim =(-0.01, headline_pos.max()+0.01))
     # fig.savefig(f"{name}.png",dpi = 300)
 
-    #! Maybe linear regression on this?
     # * Plots tonal difference versus objectivity difference
     # fig, ax = plt.subplots()
     # ax.scatter(tonal_difference, obj_diff, s=.75)
@@ -179,10 +179,5 @@ def plot_scores(npy_file, name):
 
 if __name__ == "__main__":
     # name convention = plottype_x_y_coloring_extra
-    name = "quiver_tonalDiff_headlineObj"
-    plot_scores("data/npy_files/run_2_all_200305.npy",f"{name}_first_100_NEW_colors")
-    # plot_scores("data/npy_files/run_1_5000_200305.npy",f"result_plots/5000_200305/{name}_5k_200305")
-
-    # ? Redo similarity score 
-    # ?     Compare it on positive and negative sentiment
-    # ?     Tone similarity ?
+    name = "quiver_tonalDiff_headlineObj" # name or path/name
+    plot_scores("data/npy_files/run_2_all_200305.npy",f"{name}_some_additional_name")
